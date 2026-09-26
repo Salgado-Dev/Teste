@@ -12,7 +12,7 @@ GROQ_API_KEY = "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"
 # Configurações Oficiais do OAuth2 do Google
 CLIENT_ID = "://googleusercontent.com"
 # A sua chave secreta gerada no painel do Google Cloud Console (essencial para o fluxo de 3 etapas)
-CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "COLE_SUA_CLIENT_SECRET_AQUI")
+CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "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")
 
 REDIRECT_URI = "https://onrender.com"
 
