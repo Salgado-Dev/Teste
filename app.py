@@ -31,7 +31,7 @@ def enviar_mensagem():
     
     try:
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             messages=historico,
             temperature=0.7,
             max_completion_tokens=2048,
