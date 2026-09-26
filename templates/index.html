@@ -3,158 +3,356 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini</title>
+    <title>Gemini Advanced</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-        /* Tela de Login */
-        .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center; }
-        .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; margin-bottom: 10px; }
+        body {
+            background-color: #131314;
+            color: #e3e3e3;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-        /* Botão do Google feito com Tag de Link Puro (Indestrutível por Antivírus) */
-        .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 14px 28px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; width: 260px; }
-        .btn-google:hover { background: #f2f2f2; }
-        .btn-google img { width: 18px; height: 18px; }
+        /* Cabeçalho */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background-color: #1e1f20;
+            border-bottom: 1px solid #2d2f31;
+        }
 
-        /* Container do Chat */
-        .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #0b0b0d; display: flex; flex-direction: column; position: relative; padding: 0 20px; }
-        .chat-header { padding: 20px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .chat-header h2 { font-size: 1.4rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #c4c7c5; }
-        .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4285f4, #9b51e0, #e91e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-        .chat-box { flex: 1; padding: 24px 0 100px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 32px; }
-        .chat-box::-webkit-scrollbar { width: 6px; }
-        .chat-box::-webkit-scrollbar-thumb { background: #282a2d; border-radius: 10px; }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        .message-row { display: flex; flex-direction: column; width: 100%; }
-        .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #c4c7c5; }
-        .bot .sender-name { background: linear-gradient(90deg, #669df6, #b08ee0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #4285f4;
+        }
 
-        .msg-text { font-size: 1rem; line-height: 1.6; color: #e3e3e3; white-space: pre-wrap; }
-        .user { align-items: flex-end; }
-        .user .msg-text { background-color: #1e1e24; padding: 12px 20px; border-radius: 20px; max-width: 85%; }
+        .btn-google {
+            background-color: #ffffff;
+            color: #1f1f1f;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
 
-        .thinking .msg-text { background: linear-gradient(90deg, #4285f4, #9b72cb, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: pulse 1.5s infinite ease-in-out; }
-        @keyframes pulse { 0% { background-position: 0% center; opacity: 0.6; } 50% { background-position: 100% center; opacity: 1; } 100% { background-position: 0% center; opacity: 0.6; } }
+        .btn-google:hover {
+            background-color: #e3e3e3;
+        }
 
-        .input-wrapper { position: absolute; bottom: 20px; left: 20px; right: 20px; background: #0b0b0d; padding-top: 10px; }
-        .chat-input-area { display: flex; background: #1e1e24; border-radius: 32px; padding: 6px 12px 6px 24px; align-items: center; border: 1px solid transparent; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-        .chat-input-area:focus-within { background: #131314; border-color: #4285f4; box-shadow: 0 0 0 1px #4285f4; }
-        .chat-input-area input { flex: 1; padding: 14px 0; background: transparent; border: none; color: #f2f2f2; font-size: 1rem; outline: none; }
-        .chat-input-area input::placeholder { color: #80868b; }
+        /* Conteúdo do Chat */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+        }
 
-        .chat-input-area button { background: transparent; color: #a8c7fa; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .chat-input-area button:hover { background: rgba(168, 199, 250, 0.1); }
-        .chat-input-area button svg { width: 24px; height: 24px; fill: currentColor; }
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message-sender {
+            font-size: 0.75rem;
+            color: #8e918f;
+            margin-bottom: 4px;
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background-color: #27292a;
+            color: #e3e3e3;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background-color: #1e1f20;
+            border: 1px solid #2d2f31;
+            color: #e3e3e3;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Área de Input */
+        .input-wrapper {
+            padding: 16px 24px 24px 24px;
+            background-color: #131314;
+        }
+
+        .input-container {
+            max-width: 850px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            background-color: #1e1f20;
+            border: 1px solid #3c4043;
+            border-radius: 28px;
+            padding: 8px 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #8ab4f8;
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e3e3e3;
+            font-size: 0.95rem;
+            resize: none;
+            max-height: 120px;
+            padding: 8px 0;
+        }
+
+        .btn-send {
+            background: #8ab4f8;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-send:hover {
+            opacity: 0.85;
+        }
+
+        .btn-send svg {
+            fill: #040e15;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Indicador de carregamento */
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #8ab4f8;
+            border-radius: 50%;
+            animation: pulse 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
 
-    <!-- VALIDAÇÃO DE ACESSO COM JINJA -->
-    {% if not session.get('usuario_logado') %}
-    <div class="login-container">
-        <h1>Gemini Advanced</h1>
-        <p>Faça login com sua conta do Google para começar a usar.</p>
-        
-        <!-- O link recebe a URL perfeita injetada pelo Python nos bastidores -->
-        <a href="{{ url_google }}" class="btn-google">
-            <img src="https://wikimedia.org" alt="Google Logo">
-            Fazer login com o Google
-        </a>
-    </div>
-    {% else %}
-
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2>Gemini Advanced</h2>
-            <div class="user-profile">
-                <span>{{ session.get('usuario_nome') }}</span>
+    <header>
+        <div class="logo">Gemini Advanced</div>
+        <div class="user-profile">
+            {% if session.get('usuario_logado') %}
+                <span style="font-size: 0.9rem; font-weight: 500;">{{ session.get('usuario_nome') }}</span>
                 {% if session.get('usuario_foto') %}
-                <img src="{{ session.get('usuario_foto') }}" alt="Foto">
+                    <img src="{{ session.get('usuario_foto') }}" alt="Foto do perfil" class="user-avatar">
                 {% endif %}
-            </div>
+            {% else %}
+                <a href="{{ url_google }}" class="btn-google">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                    Entrar com o Google
+                </a>
+            {% endif %}
         </div>
-        
-        <div class="chat-box" id="chatBox">
-            <div class="message-row bot">
-                <div class="sender-name">Gemini</div>
-                <div class="msg-text">E aí! Qual é a boa de hoje? Manda a braba.</div>
-            </div>
-        </div>
-        
-        <div class="input-wrapper">
-            <div class="chat-input-area">
-                <input type="text" id="userInput" placeholder="Digite uma mensagem..." onkeypress="verificarEnter(event)">
-                <button onclick="enviarMensagem()">
-                    <svg viewBox="0 -960 960 960"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z"/></svg>
-                </button>
-            </div>
+    </header>
+
+    <div class="chat-container" id="chatContainer">
+        <div class="message assistant">
+            <span class="message-sender">Gemini</span>
+            <div class="message-bubble">E aí! Qual é a boa de hoje? Manda a braba.</div>
         </div>
     </div>
-    {% endif %}
 
-<script>
-    async function enviarMensagem() {
-        const input = document.getElementById('userInput');
-        const mensagem = input.value.trim();
-        if (!mensagem) return;
+    <div class="input-wrapper">
+        <div class="input-container">
+            <textarea id="mensagemInput" rows="1" placeholder="Digite uma mensagem..."></textarea>
+            <button class="btn-send" id="btnEnviar">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
 
-        input.value = '';
-        adicionarMessageNaTela(mensagem, 'user');
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const mensagemInput = document.getElementById('mensagemInput');
+        const btnEnviar = document.getElementById('btnEnviar');
 
-        const botMsgDiv = adicionarMessageNaTela('Analisando contexto...', 'bot');
-        botMsgDiv.classList.add('thinking');
+        // Ajusta a altura da caixa de texto conforme o usuário digita
+        mensagemInput.addEventListener('input', () => {
+            mensagemInput.style.height = 'auto';
+            mensagemInput.style.height = mensagemInput.scrollHeight + 'px';
+        });
 
-        try {
-            const response = await fetch('/enviar_mensagem', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: mensagem })
-            });
-
-            const dados = await response.json();
-            botMsgDiv.classList.remove('thinking');
-            
-            if (response.ok) {
-                botMsgDiv.querySelector('.msg-text').innerText = dados.resposta;
-            } else {
-                botMsgDiv.querySelector('.msg-text').innerText = "Erro interno: " + dados.erro;
+        // Envia mensagem ao pressionar Enter
+        mensagemInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                enviarMensagem();
             }
-        } catch (erro) {
-            botMsgDiv.classList.remove('thinking');
-            botMsgDiv.querySelector('.msg-text').innerText = "Erro ao conectar com o servidor.";
+        });
+
+        btnEnviar.addEventListener('click', enviarMensagem);
+
+        async function enviarMensagem() {
+            const texto = mensagemInput.value.trim();
+            if (!texto) return;
+
+            adicionarMensagem('user', 'Você', texto);
+            mensagemInput.value = '';
+            mensagemInput.style.height = 'auto';
+
+            // Adiciona o indicador de carregamento
+            const loadingId = adicionarCarregamento();
+
+            try {
+                const response = await fetch('/enviar_mensagem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: texto })
+                });
+
+                const data = await response.json();
+                removerCarregamento(loadingId);
+
+                if (response.ok) {
+                    adicionarMensagem('assistant', 'Gemini', data.resposta);
+                } else {
+                    adicionarMensagem('assistant', 'Gemini', 'Erro: ' + (data.erro || 'Erro desconhecido.'));
+                }
+            } catch (err) {
+                removerCarregamento(loadingId);
+                adicionarMensagem('assistant', 'Gemini', 'Erro de conexão com o servidor.');
+            }
         }
-    }
 
-    function adicionarMessageNaTela(texto, remetente) {
-        const chatBox = document.getElementById('chatBox');
-        if(!chatBox) return;
-        
-        const rowDiv = document.createElement('div');
-        rowDiv.className = `message-row ${remetente}`;
-        
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'sender-name';
-        nameDiv.innerText = remetente === 'user' ? 'Você' : 'Gemini';
-        
-        const textDiv = document.createElement('div');
-        textDiv.className = 'msg-text';
-        textDiv.innerText = texto;
-        
-        if (remetente === 'bot') rowDiv.appendChild(nameDiv);
-        rowDiv.appendChild(textDiv);
-        chatBox.appendChild(rowDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        return rowDiv;
-    }
+        function adicionarMensagem(tipo, autor, texto) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${tipo}`;
 
-    function verificarEnter(event) {
-        if (event.key === 'Enter') enviarMensagem();
-    }
-</script>
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'message-sender';
+            senderSpan.textContent = autor;
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = texto;
+
+            msgDiv.appendChild(senderSpan);
+            msgDiv.appendChild(bubbleDiv);
+
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function adicionarCarregamento() {
+            const id = 'loading-' + Date.now();
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message assistant';
+            msgDiv.id = id;
+
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'message-sender';
+            senderSpan.textContent = 'Gemini';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.innerHTML = `
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>`;
+
+            msgDiv.appendChild(senderSpan);
+            msgDiv.appendChild(bubbleDiv);
+
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return id;
+        }
+
+        function removerCarregamento(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+    </script>
 </body>
 </html>
