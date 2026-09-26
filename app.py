@@ -1,19 +1,17 @@
 import os
 import requests
+import urllib.parse
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 app = Flask(__name__)
-# Chave secreta estável para manter a sessão ativa sem deslogar
 app.secret_key = "chave-definitiva-e-segura-do-gemini-clone"
 
 # Configuração da API da Groq
 GROQ_API_KEY = "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"
 
-# Configurações Oficiais do OAuth2 do Google
+# Configurações do Google (Fixas e completas para não haver quebra de texto)
 CLIENT_ID = "://googleusercontent.com"
-# A sua chave secreta gerada no painel do Google Cloud Console (essencial para o fluxo de 3 etapas)
-CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "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")
-
+CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "COLE_SUA_CLIENT_SECRET_AQUI")
 REDIRECT_URI = "https://onrender.com"
 
 PROMPT_PERSONALIDADE = "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples e mostre empatia quando algo der errado."
@@ -24,21 +22,24 @@ def index():
         session['historico'] = [{"role": "system", "content": PROMPT_PERSONALIDADE}]
     return render_template('index.html')
 
-# ETAPA 1: Redireciona o usuário para a tela oficial de consentimento do Google
+# ETAPA 1: Redireciona usando montagem de parâmetros limpa (Evita erro de URL)
 @app.route('/login')
 def login():
-    google_auth_url = (
-        "https://google.com"
-        f"?client_id={CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
-        "&response_type=code"  # Fluxo seguro por código de autorização
-        "&scope=https://googleapis.com"
-        "&access_type=offline"
-        "&prompt=select_account"
-    )
+    base_url = "https://google.com"
+    parametros = {
+        "client_id": CLIENT_ID,
+        "redirect_uri": REDIRECT_URI,
+        "response_type": "code",
+        "scope": "https://googleapis.com https://googleapis.com",
+        "access_type": "offline",
+        "prompt": "select_account"
+    }
+    
+    # O urllib monta o link perfeitamente trocando espaços por %20 e amarrando no accounts.google.com
+    google_auth_url = f"{base_url}?{urllib.parse.urlencode(parametros)}"
     return redirect(google_auth_url)
 
-# ETAPA 2 e 3: Recebe o código do Google, troca pelo token e puxa o perfil do usuário por baixo dos panos
+# ETAPA 2 e 3: Processa o código retornado e valida o usuário
 @app.route('/auth')
 def auth():
     code = request.args.get('code')
@@ -46,7 +47,6 @@ def auth():
         return "Erro: Código de autorização não fornecido pelo Google.", 400
         
     try:
-        # Troca o código temporário pelo token de acesso de forma segura (Servidor para Servidor)
         token_url = "https://googleapis.com"
         token_data = {
             "code": code,
@@ -59,12 +59,10 @@ def auth():
         access_token = token_res.get('access_token')
         
         if access_token:
-            # Puxa os dados de nome e foto usando o token válido
             user_info_url = "https://googleapis.com"
             headers = {"Authorization": f"Bearer {access_token}"}
             user_info = requests.get(user_info_url, headers=headers).json()
             
-            # Salva tudo na sessão segura do Flask
             session['usuario_logado'] = True
             session['usuario_nome'] = user_info.get('name', 'Usuário')
             session['usuario_foto'] = user_info.get('picture', '')
@@ -87,7 +85,6 @@ def enviar_mensagem():
     historico.append({"role": "user", "content": pergunta_usuario})
     
     try:
-        # Chamada direta para a API da Groq usando a biblioteca requests para evitar travamentos de sockets
         headers = {
             "Authorization": f"Bearer {GROQ_API_KEY}",
             "Content-Type": "application/json"
