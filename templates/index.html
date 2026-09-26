@@ -13,8 +13,8 @@
         .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; margin-bottom: 10px; }
 
-        /* Botão estilizado do Google dentro do Formulário */
-        .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 12px 24px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; width: 240px; }
+        /* Botão do Google em HTML Puro */
+        .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 14px 28px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; text-decoration: none; width: 260px; }
         .btn-google:hover { background: #f2f2f2; }
         .btn-google img { width: 18px; height: 18px; }
 
@@ -54,23 +54,20 @@
 </head>
 <body>
 
-    <!-- TELA DE LOGIN -->
+    <!-- CONTROLE DE SESSÃO VIA JINJA -->
     {% if not session.get('usuario_logado') %}
     <div class="login-container">
         <h1>Gemini Advanced</h1>
         <p>Faça login com sua conta do Google para começar a usar.</p>
         
-        <!-- Formulário nativo força a mudança de página ignorando travas silenciosas -->
-        <form action="/login" method="GET">
-            <button type="submit" class="btn-google">
-                <img src="https://wikimedia.org" alt="Google Logo">
-                Fazer login com o Google
-            </button>
-        </form>
+        <!-- Link nativo para a rota do Flask -->
+        <a href="/login" class="btn-google">
+            <img src="https://wikimedia.org" alt="Google Logo">
+            Fazer login com o Google
+        </a>
     </div>
     {% else %}
 
-    <!-- TELA DO CHAT -->
     <div class="chat-container">
         <div class="chat-header">
             <h2>Gemini Advanced</h2>
@@ -161,4 +158,3 @@
 </script>
 </body>
 </html>
--
