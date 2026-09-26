@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Chave secreta da sessão do Flask
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "chave-definitiva-e-segura-do-gemini-clone")
 
-# Sua chave da API da Groq
+# Chave da API da Groq
 GROQ_API_KEY = "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"
 
 # Credenciais oficiais do Google e do Render
@@ -45,23 +45,25 @@ def index():
     
     return render_template('index.html', url_google=url_google_pronta)
 
-@app.route('/auth', methods=['POST'])
+# Rota para receber a resposta POST e GET do Google
+@app.route('/auth', methods=['GET', 'POST'])
 def auth():
-    token_google = request.form.get('id_token')
-    if token_google:
-        try:
-            partes = token_google.split('.')
-            if len(partes) > 1:
-                payload_b64 = partes[1]
-                payload_b64 += '=' * (-len(payload_b64) % 4)
-                dados_usuario = json.loads(base64.b64decode(payload_b64).decode('utf-8'))
-                
-                session['usuario_logado'] = True
-                session['usuario_nome'] = dados_usuario.get('name', 'Usuário')
-                session['usuario_foto'] = dados_usuario.get('picture', '')
-                session.modified = True
-        except Exception as e:
-            print(f"Erro ao decodificar login: {e}")
+    if request.method == 'POST':
+        token_google = request.form.get('id_token')
+        if token_google:
+            try:
+                partes = token_google.split('.')
+                if len(partes) > 1:
+                    payload_b64 = partes[1]
+                    payload_b64 += '=' * (-len(payload_b64) % 4)
+                    dados_usuario = json.loads(base64.b64decode(payload_b64).decode('utf-8'))
+                    
+                    session['usuario_logado'] = True
+                    session['usuario_nome'] = dados_usuario.get('name', 'Usuário')
+                    session['usuario_foto'] = dados_usuario.get('picture', '')
+                    session.modified = True
+            except Exception as e:
+                print(f"Erro ao decodificar login: {e}")
             
     return redirect(url_for('index'))
 
