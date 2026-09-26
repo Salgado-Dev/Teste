@@ -5,6 +5,8 @@ from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "chave-super-secreta-do-gemini-clone"
+# Força o Authlib a aceitar o redirecionamento do Render sem travar em HTTP
+os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Configuração do cliente Groq
 client = Groq(api_key="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")
@@ -14,7 +16,7 @@ oauth = OAuth(app)
 google = oauth.register(
     name='google',
     client_id='847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com',
-    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
+    client_secret=os.environ.get("), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
     server_metadata_url='https://google.com',
     client_kwargs={'scope': 'openid email profile'}
 )
