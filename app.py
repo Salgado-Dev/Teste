@@ -11,6 +11,7 @@ app.secret_key = "chave-super-secreta-do-gemini-clone"
 # Configuração do cliente Groq
 client = Groq(api_key="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")
 
+# DADOS COMPLETOS FIXADOS PARA NÃO DAR ERRO DE REDIRECIONAMENTO
 CLIENT_ID = "://googleusercontent.com"
 REDIRECT_URI = "https://onrender.com"
 
@@ -22,7 +23,7 @@ def index():
         session['historico'] = [{"role": "system", "content": PROMPT_PERSONALIDADE}]
     return render_template('index.html')
 
-# ROTA DE LOGIN: Monta o link oficial e correto do Google Accounts manualmente
+# ROTA DE LOGIN: Gerando a URL manual apontando para o servidor de contas correto da Google
 @app.route('/login')
 def login():
     parametros = {
@@ -33,25 +34,27 @@ def login():
         "nonce": "123456",
         "response_mode": "form_post"
     }
+    # Aqui mudamos para accounts.google.com explicitamente para o navegador não se perder
     url_google = "https://google.com?" + urllib.parse.urlencode(parametros)
     return redirect(url_google)
 
-# ROTA DE RETORNO: Recebe os dados do perfil direto do Google após o login
+# ROTA DE RETORNO: Recebe os dados de perfil do Google e libera o chat
 @app.route('/auth', methods=['POST'])
 def auth():
     token_google = request.form.get('id_token')
     if token_google:
         try:
-            # Abre e lê as informações de nome e foto protegidas do token
             partes = token_google.split('.')
-            payload = partes[1]
-            payload += '=' * (-len(payload) % 4)
-            dados_usuario = json.loads(base64.b64decode(payload).decode('utf-8'))
-            
-            session['usuario_logado'] = True
-            session['usuario_nome'] = dados_usuario.get('name', 'Usuário')
-            session['usuario_foto'] = dados_usuario.get('picture', '')
-            session.modified = True
+            if len(partes) > 1:
+                payload_bruto = partes[1]
+                # Corrige o espaçamento base64 para evitar quebras no Python
+                payload_bruto += '=' * (-len(payload_bruto) % 4)
+                dados_usuario = json.loads(base64.b64decode(payload_bruto).decode('utf-8'))
+                
+                session['usuario_logado'] = True
+                session['usuario_nome'] = dados_usuario.get('name', 'Usuário')
+                session['usuario_foto'] = dados_usuario.get('picture', '')
+                session.modified = True
         except Exception as e:
             print(f"Erro ao processar o login: {e}")
             
@@ -62,7 +65,7 @@ def enviar_mensagem():
     dados = request.get_json()
     pergunta_usuario = dados.get('mensagem', '').strip()
     
-    if not pergunta_usuario:
+    if not pregunta_usuario:
         return jsonify({"erro": "Mensagem vazia"}), 400
 
     historico = session.get('historico', [{"role": "system", "content": PROMPT_PERSONALIDADE}])
