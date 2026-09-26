@@ -1,15 +1,25 @@
 import os
-import base64
-import json
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from groq import Groq
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "chave-super-secreta-do-gemini-clone"
 
+# Configuração do cliente Groq
 client = Groq(api_key="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")
 
-PROMPT_PERSONALIDADE = "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples e mostre empatia quando algo der errado (ex: 'putz, que bizarro, tenta mudar isso aqui pra ver se resolve...'). Mantenha o papo leve, focado em ajudar, mas parecendo 100% uma pessoa real do outro lado da tela."
+# Configuração do OAuth do Google no Backend
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id='://googleusercontent.com',
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
+    server_metadata_url='https://google.com',
+    client_kwargs={'scope': 'openid email profile'}
+)
+
+PROMPT_PERSONALIDADE = "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples e mostre empatia quando algo der errado."
 
 @app.route('/')
 def index():
@@ -17,25 +27,25 @@ def index():
         session['historico'] = [{"role": "system", "content": PROMPT_PERSONALIDADE}]
     return render_template('index.html')
 
-# ROTA NOVA: Recebe o login direto do Google e valida no servidor
-@app.route('/login_google', methods=['POST'])
-def login_google():
-    token_google = request.form.get('credential')
-    if token_google:
-        try:
-            # Decodifica o token enviado de forma nativa e segura
-            partes = token_google.split('.')
-            payload_ajustado = partes[1] + '=' * (-len(partes[1]) % 4)
-            dados_usuario = json.loads(base64.b64decode(payload_ajustado).decode('utf-8'))
-            
-            # Salva na sessão do Flask que o usuário está validado
+# ROTA QUE DIRECIONA PRO GOOGLE (O antivírus não bloqueia link direto)
+@app.route('/login')
+def login():
+    redirect_uri = url_for('auth', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+# ROTA QUE RECEBE O RETORNO DO GOOGLE
+@app.route('/auth')
+def auth():
+    try:
+        token = google.authorize_access_token()
+        user_info = token.get('userinfo')
+        if user_info:
             session['usuario_logado'] = True
-            session['usuario_nome'] = dados_usuario.get('name')
-            session['usuario_foto'] = dados_usuario.get('picture')
+            session['usuario_nome'] = user_info.get('name')
+            session['usuario_foto'] = user_info.get('picture')
             session.modified = True
-        except Exception as e:
-            print(f"Erro ao decodificar token: {e}")
-            
+    except Exception as e:
+        print(f"Erro na autenticação: {e}")
     return redirect(url_for('index'))
 
 @app.route('/enviar_mensagem', methods=['POST'])
@@ -66,7 +76,6 @@ def enviar_mensagem():
         session.modified = True
         
         return jsonify({"resposta": resposta_ia})
-        
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
