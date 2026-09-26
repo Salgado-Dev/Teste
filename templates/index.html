@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Groq (Render)</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 450px; height: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { background: #2a2a2a; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 75%; word-wrap: break-word; }
+        .user { background: #4A90E2; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+        .bot { background: #e9e9eb; color: #333; align-self: flex-start; border-bottom-left-radius: 0; }
+        .chat-input-area { display: flex; border-top: 1px solid #ddd; padding: 10px; background: #fff; }
+        .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+        .chat-input-area button { background: #4A90E2; color: white; border: none; padding: 10px 15px; margin-left: 5px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">🤖 Groq Chat Real</div>
+    <div class="chat-box" id="chatBox">
+        <div class="msg bot">Olá! Como posso te ajudar hoje?</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="Digite sua mensagem..." onkeypress="verificarEnter(event)">
+        <button onclick="enviarMensagem()">Enviar</button>
+    </div>
+</div>
+
+<script>
+    async function enviarMensagem() {
+        const input = document.getElementById('userInput');
+        const mensagem = input.value.trim();
+        if (!mensagem) return;
+
+        input.value = '';
+        adicionarMensagemNaTela(mensagem, 'user');
+        const botMsgDiv = adicionarMensagemNaTela('Pensando...', 'bot');
+
+        try {
+            // Agora ele chama o seu próprio servidor Python de forma segura e local
+            const response = await fetch('/enviar_mensagem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mensagem: mensagem })
+            });
+
+            const dados = await response.json();
+
+            if (response.ok) {
+                botMsgDiv.innerText = dados.resposta;
+            } else {
+                botMsgDiv.innerText = "Erro: " + dados.erro;
+            }
+        } catch (erro) {
+            botMsgDiv.innerText = "Erro de conexão com o servidor.";
+        }
+    }
+
+    function adicionarMensagemNaTela(texto, remetente) {
+        const chatBox = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `msg ${remetente}`;
+        msgDiv.innerText = texto;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return msgDiv;
+    }
+
+    function verificarEnter(event) {
+        if (event.key === 'Enter') enviarMensagem();
+    }
+</script>
+</body>
+</html>
