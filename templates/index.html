@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini</title>
-    <!-- Importa a biblioteca oficial de autenticação do Google -->
-    <script src="https://google.com" async defer></script>
+    <!-- Script oficial do Google -->
+    <script src="https://google.com" defer></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, sans-serif; }
         body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
@@ -15,13 +15,15 @@
         .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; }
 
+        /* Container do Botão do Google */
+        #botaoGoogleContainer { min-height: 40px; display: flex; align-items: center; justify-content: center; }
+
         /* Container do Chat (Inicia Escondido) */
         .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #0b0b0d; display: flex; flex-direction: column; position: relative; padding: 0 20px; display: none; }
 
         .chat-header { padding: 20px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .chat-header h2 { font-size: 1.4rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* Informações do Usuário Logado */
         .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #c4c7c5; }
         .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
 
@@ -49,35 +51,26 @@
         .chat-input-area input::placeholder { color: #80868b; }
 
         .chat-input-area button { background: transparent; color: #a8c7fa; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .chat-input-area button hover { background: rgba(168, 199, 250, 0.1); }
+        .chat-input-area button:hover { background: rgba(168, 199, 250, 0.1); }
         .chat-input-area button svg { width: 24px; height: 24px; fill: currentColor; }
     </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN ATIVA POR PADRÃO -->
+<!-- TELA DE LOGIN -->
 <div class="login-container" id="loginScreen">
     <h1>Gemini Advanced</h1>
-    <p>Faça login com sua conta do Google para começar a buildar seus projetos.</p>
+    <p id="textoStatus">Faça login com sua conta do Google para começar a buildar seus projetos.</p>
     
-    <!-- O botão oficial do Google será renderizado aqui automaticamente -->
-    <div id="g_id_onload"
-         data-client_id="847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="manipularLoginGoogle"
-         data-auto_prompt="false">
-    </div>
-    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_blue" data-text="signin_with" data-size="large"></div>
+    <!-- Elemento limpo onde o botão SERÁ injetado pelo JavaScript -->
+    <div id="botaoGoogleContainer"></div>
 </div>
 
-<!-- CONTAINER DO CHAT (SÓ APARECE APÓS LOGIN) -->
+<!-- CONTAINER DO CHAT -->
 <div class="chat-container" id="chatScreen">
     <div class="chat-header">
         <h2>Gemini Advanced</h2>
-        <div class="user-profile" id="userProfile">
-            <!-- Dados do usuário entram aqui via JS -->
-        </div>
+        <div class="user-profile" id="userProfile"></div>
     </div>
     
     <div class="chat-box" id="chatBox">
@@ -98,21 +91,34 @@
 </div>
 
 <script>
-    // Função disparada assim que o usuário faz login com sucesso no Google
-    function manipularLoginGoogle(response) {
-        // Pega o token seguro que o Google gerou
-        const id_token = response.credential;
+    // Inicialização forçada do Google Identity Services por JavaScript
+    window.onload = function () {
+        try {
+            google.accounts.id.initialize({
+                client_id: "://googleusercontent.com",
+                callback: manipularLoginGoogle
+            });
 
-        // Decodifica o token localmente apenas para pegar o nome e a foto do usuário para a interface
-        const payload = JSON.parse(atob(id_token.split('.')[1]));
+            google.accounts.id.renderButton(
+                document.getElementById("botaoGoogleContainer"),
+                { theme: "filled_blue", size: "large", type: "standard", shape: "pill", text: "signin_with" }
+            );
+        } catch (erro) {
+            document.getElementById("textoStatus").innerText = "Erro ao carregar o botão de login. Se você usa AdBlock ou Brave, desative-os para este site.";
+            document.getElementById("textoStatus").style.color = "#ff4a4a";
+            console.error(erro);
+        }
+    };
+
+    function manipularLoginGoogle(response) {
+        const id_token = response.credential;
+        const payload = JSON.parse(atob(id_token.split('.')));
         
-        // Atualiza a barra superior com o nome e foto do usuário
         document.getElementById('userProfile').innerHTML = `
             <span>${payload.name}</span>
             <img src="${payload.picture}" alt="Foto de perfil">
         `;
 
-        // Troca as telas: esconde o login e mostra o chat
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('chatScreen').style.display = 'flex';
     }
@@ -123,9 +129,9 @@
         if (!mensagem) return;
 
         input.value = '';
-        adicionarMensagemNaTela(mensagem, 'user');
+        adicionarMessageNaTela(mensagem, 'user');
 
-        const botMsgDiv = adicionarMensagemNaTela('Analisando contexto...', 'bot');
+        const botMsgDiv = adicionarMessageNaTela('Analisando contexto...', 'bot');
         botMsgDiv.classList.add('thinking');
 
         try {
@@ -149,7 +155,7 @@
         }
     }
 
-    function adicionarMensagemNaTela(texto, remetente) {
+    function adicionarMessageNaTela(texto, remetente) {
         const chatBox = document.getElementById('chatBox');
         const rowDiv = document.createElement('div');
         rowDiv.className = `message-row ${remetente}`;
