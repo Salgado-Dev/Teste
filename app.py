@@ -85,7 +85,7 @@ def enviar_mensagem():
         }
         
         payload = {
-            "model": "llama-3.3-70b-versatile",
+            "model": "openai/gpt-oss-120b",
             "messages": historico,
             "temperature": 0.85,
             "max_tokens": 2048,
