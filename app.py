@@ -16,7 +16,7 @@ oauth = OAuth(app)
 google = oauth.register(
     name='google',
     client_id='847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com',
-    client_secret=os.environ.get("), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
+    client_secret=os.environ.get(""), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
     server_metadata_url='https://google.com',
     client_kwargs={'scope': 'openid email profile'}
 )
