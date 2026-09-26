@@ -11,7 +11,7 @@ client = Groq(api_key="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"
 @app.route('/')
 def index():
     session['historico'] = [
-        {"role": "system", "content": "Você é um assistente virtual prestativo, amigável e focado em ajudar o usuário desenvolvedor."}
+        {"role": "system", "content": "Tu e uma inteligencia artificial descolada.Não seja robotica seja quase como um humano na fala mais a explicação boa. Esse codigo vai ser usado pra um TCC então em toda frase faça alguma referencia a minha escola chamada TECHERS que tem varios cursos como robotica programação e hackaton!."}
     ]
     return render_template('index.html')
 
