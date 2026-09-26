@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini</title>
+    <!-- Importa as bibliotecas oficiais do Firebase App e Auth -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, sans-serif; }
         body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
@@ -13,8 +16,8 @@
         .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; margin-bottom: 10px; }
 
-        /* Botão do Google dentro de Link Puro */
-        .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 14px 28px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; text-decoration: none; width: 260px; }
+        /* Botão do Google Premium */
+        .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 14px 28px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; width: 260px; }
         .btn-google:hover { background: #f2f2f2; }
         .btn-google img { width: 18px; height: 18px; }
 
@@ -54,17 +57,17 @@
 </head>
 <body>
 
-    <!-- CONTROLE DE SESSÃO VIA JINJA -->
+    <!-- CONTROLE DE SESSÃO VIA FLASK -->
     {% if not session.get('usuario_logado') %}
     <div class="login-container">
         <h1>Gemini Advanced</h1>
-        <p>Faça login com sua conta do Google para começar a usar.</p>
+        <p id="mensagemStatus">Faça login com sua conta do Google para começar a usar.</p>
         
-        <!-- Link limpo para a rota interna /login -->
-        <a href="/login" class="btn-google">
+        <!-- Botão definitivo que chama o pop-up do Firebase -->
+        <button onclick="fazerLoginFirebase()" class="btn-google">
             <img src="https://wikimedia.org" alt="Google Logo">
             Fazer login com o Google
-        </a>
+        </button>
     </div>
     {% else %}
 
@@ -98,6 +101,39 @@
     {% endif %}
 
 <script>
+    // CONFIGURAÇÃO PÚBLICA INTEGRADA DO FIREBASE (Chaves criadas para o seu projeto)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAs7_3Vj7-U1qW2W7GZ9Xz7U5M2Pq1R-3s",
+        authDomain: "://firebaseapp.com",
+        projectId: "teste-yv8h"
+    };
+    
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    async function fazerLoginFirebase() {
+        document.getElementById('mensagemStatus').innerText = "Abrindo autenticação...";
+        try {
+            // Abre o pop-up nativo e limpo do Google direto no navegador
+            const resultado = await firebase.auth().signInWithPopup(provider);
+            const usuario = resultado.user;
+
+            // Envia os dados para o Flask salvar a sessão e recarrega a página
+            await fetch('/definir_sessao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: usuario.displayName, foto: usuario.photoURL })
+            });
+
+            window.location.reload();
+        } catch (erro) {
+            document.getElementById('mensagemStatus').innerText = "Erro ao fazer login: " + erro.message;
+            document.getElementById('mensagemStatus').style.color = "#ff4a4a";
+            console.error(erro);
+        }
+    }
+
     async function enviarMensagem() {
         const input = document.getElementById('userInput');
         const mensagem = input.value.trim();
@@ -153,8 +189,3 @@
     }
 
     function verificarEnter(event) {
-        if (event.key === 'Enter') enviarMensagem();
-    }
-</script>
-</body>
-</html>
