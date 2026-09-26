@@ -13,7 +13,7 @@ client = Groq(api_key="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"
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
-    client_id='://googleusercontent.com',
+    client_id='847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com',
     client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""), # Pode deixar em branco se não configurou no painel, o fluxo básico passa
     server_metadata_url='https://google.com',
     client_kwargs={'scope': 'openid email profile'}
