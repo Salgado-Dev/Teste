@@ -11,7 +11,7 @@ GROQ_API_KEY = "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"
 
 # Configurações do Google (Fixas e completas para não haver quebra de texto)
 CLIENT_ID = "://googleusercontent.com"
-CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "COLE_SUA_CLIENT_SECRET_AQUI")
+CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "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")
 REDIRECT_URI = "https://onrender.com"
 
 PROMPT_PERSONALIDADE = "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples e mostre empatia quando algo der errado."
