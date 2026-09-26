@@ -3,66 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Pro | GPT-OSS</title>
+    <title>Gemini</title>
     <style>
-        /* Estilos Globais e Reset */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #0d0e12; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e6ed; }
+        /* Reset e Estilos de Base (Padrão Google) */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
 
-        /* Container Principal do Chat */
-        .chat-container { width: 100%; max-width: 500px; height: 85vh; background: #161820; border-radius: 24px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #242736; margin: 10px; }
+        /* Container Principal do Gemini */
+        .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #0b0b0d; display: flex; flex-direction: column; position: relative; padding: 0 20px; }
 
-        /* Cabeçalho Premium */
-        .chat-header { background: linear-gradient(135deg, #1f2235 0%, #161820 100%); padding: 20px; text-align: center; border-bottom: 1px solid #242736; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .chat-header .status-icon { width: 10px; height: 10px; background-color: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
-        .chat-header h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; }
+        /* Cabeçalho Minimalista com Efeito Gemini */
+        .chat-header { padding: 20px 0; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .chat-header h2 { font-size: 1.4rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Caixa de Mensagens */
-        .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; background-color: #0f111a; }
+        /* Área de Conversa */
+        .chat-box { flex: 1; padding: 20px 0 100px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 32px; }
         
-        /* Customização da Barra de Rolagem */
+        /* Scrollbar Invisível Estilo Web Moderna */
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-track { background: transparent; }
-        .chat-box::-webkit-scrollbar-thumb { background: #242736; border-radius: 10px; }
+        .chat-box::-webkit-scrollbar-thumb { background: #282a2d; border-radius: 10px; }
 
-        /* Balões de Mensagem */
-        .msg { padding: 14px 18px; border-radius: 18px; max-width: 80%; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; transition: all 0.2s ease; animation: fadeIn 0.3s ease forwards; opacity: 0; transform: translateY(10px); }
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        /* Estrutura das Mensagens Sem Balões Pesados */
+        .message-row { display: flex; flex-direction: column; width: 100%; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilo da Mensagem do Usuário */
-        .user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3); }
+        /* Identificadores de Quem Fala (Estilo Google) */
+        .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #c4c7c5; letter-spacing: 0.5px; }
+        .bot .sender-name { background: linear-gradient(90deg, #669df6, #b08ee0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Estilo da Mensagem do Bot */
-        .bot { background-color: #1e2230; color: #e3e6ed; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #2b3044; }
+        /* Conteúdo do Texto */
+        .msg-text { font-size: 1rem; line-height: 1.6; color: #e3e3e3; white-space: pre-wrap; max-width: 100%; }
+        
+        /* Customização da Mensagem do Usuário */
+        .user { align-items: flex-end; }
+        .user .msg-text { background-color: #1e1e24; padding: 12px 20px; border-radius: 20px; max-width: 85%; color: #e3e3e3; }
 
-        /* Balão Especial de Carregamento ("Pensando") */
-        .thinking { font-style: italic; color: #8a92b2; background-color: rgba(30, 34, 48, 0.5); border: 1px dashed #3b4261; }
+        /* Efeito de Carregamento Brilhante (Sparkle) */
+        .thinking .msg-text { color: #888888; font-style: normal; animation: pulse 1.5s infinite ease-in-out; background: linear-gradient(90deg, #4285f4, #9b72cb, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; }
+        @keyframes pulse { 0% { background-position: 0% center; opacity: 0.6; } 50% { background-position: 100% center; opacity: 1; } 100% { background-position: 0% center; opacity: 0.6; } }
 
-        /* Área de Input Inferior */
-        .chat-input-area { display: flex; padding: 16px; background: #161820; border-top: 1px solid #242736; gap: 12px; align-items: center; }
-        .chat-input-area input { flex: 1; padding: 14px 20px; background: #1e2230; border: 1px solid #242736; border-radius: 14px; color: #ffffff; font-size: 0.95rem; outline: none; transition: border 0.2s ease, box-shadow: 0.2s ease; }
-        .chat-input-area input::placeholder { color: #626983; }
-        .chat-input-area input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); background: #232736; }
+        /* Barra de Input Flutuante Arredondada (Fundo Fixo Embaixo) */
+        .input-wrapper { position: absolute; bottom: 20px; left: 20px; right: 20px; background: #0b0b0d; padding-top: 10px; }
+        .chat-input-area { display: flex; background: #1e1e24; border-radius: 32px; padding: 6px 12px 6px 24px; align-items: center; border: 1px solid transparent; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        
+        /* Borda Colorida Dinâmica ao Clicar (Efeito Gemini Active) */
+        .chat-input-area:focus-within { background: #131314; border-color: #4285f4; box-shadow: 0 0 0 1px #4285f4, 0 12px 30px rgba(0,0,0,0.4); }
 
-        /* Botão Enviar Minimalista */
-        .chat-input-area button { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 14px 24px; font-weight: 600; font-size: 0.95rem; border-radius: 14px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
-        .chat-input-area button:hover { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3); }
-        .chat-input-area button:active { transform: translateY(1px); }
+        .chat-input-area input { flex: 1; padding: 14px 0; background: transparent; border: none; color: #f2f2f2; font-size: 1rem; outline: none; }
+        .chat-input-area input::placeholder { color: #80868b; }
+
+        /* Botão Enviar Circular Ícone */
+        .chat-input-area button { background: transparent; color: #a8c7fa; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .chat-input-area button:hover { background: rgba(168, 199, 250, 0.1); color: #c4dedb; }
+        .chat-input-area button svg { width: 24px; height: 24px; fill: currentColor; }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
-        <div class="status-icon"></div>
-        <h2>GPT-OSS 120B Pro</h2>
+        <h2>Gemini Advanced</h2>
     </div>
+    
     <div class="chat-box" id="chatBox">
-        <div class="msg bot" style="opacity: 1; transform: none;">Olá! Sou o seu assistente de desenvolvimento avançado. Como posso impulsionar seu código hoje?</div>
+        <!-- Mensagem Inicial Estilo Google -->
+        <div class="message-row bot">
+            <div class="sender-name">Gemini</div>
+            <div class="msg-text">E aí, beleza? Sou seu parceiro de desenvolvimento. O que a gente vai buildar ou arrumar nesse código hoje? Manda a braba.</div>
+        </div>
     </div>
-    <div class="chat-input-area">
-        <input type="text" id="userInput" placeholder="Escreva sua mensagem aqui..." onkeypress="verificarEnter(event)">
-        <button onclick="enviarMensagem()">Enviar</button>
+    
+    <div class="input-wrapper">
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Digite um comando ou pergunta..." onkeypress="verificarEnter(event)">
+            <button onclick="enviarMensagem()" title="Enviar mensagem">
+                <!-- Ícone de seta minimalista do Material Design -->
+                <svg viewBox="0 -960 960 960"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z"/></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -75,8 +94,8 @@
         input.value = '';
         adicionarMensagemNaTela(mensagem, 'user');
 
-        // Cria o balão elegante de "Pensando"
-        const botMsgDiv = adicionarMensagemNaTela('Processando resposta...', 'bot');
+        // Cria o efeito de texto brilhante dinâmico simulando o processamento do Gemini
+        const botMsgDiv = adicionarMensagemNaTela('Analisando contexto...', 'bot');
         botMsgDiv.classList.add('thinking');
 
         try {
@@ -87,31 +106,46 @@
             });
 
             const dados = await response.json();
-
-            // Remove a classe de carregamento e exibe o resultado final
             botMsgDiv.classList.remove('thinking');
             
             if (response.ok) {
-                botMsgDiv.innerText = dados.resposta;
+                // Atualiza o container interno mantendo a formatação limpa do Gemini
+                botMsgDiv.querySelector('.msg-text').innerText = dados.resposta;
             } else {
-                botMsgDiv.style.color = "#ff4a4a";
-                botMsgDiv.innerText = "Erro interno: " + dados.erro;
+                botMsgDiv.querySelector('.msg-text').style.color = "#ececec";
+                botMsgDiv.querySelector('.msg-text').innerText = "Putz, deu algum erro interno aqui: " + dados.erro;
             }
         } catch (erro) {
             botMsgDiv.classList.remove('thinking');
-            botMsgDiv.style.color = "#ff4a4a";
-            botMsgDiv.innerText = "Falha de rede ao conectar com o servidor.";
+            botMsgDiv.querySelector('.msg-text').style.color = "#da6570";
+            botMsgDiv.querySelector('.msg-text').innerText = "Ih, deu ruim na rede. Não consegui conectar com o servidor.";
         }
     }
 
     function adicionarMensagemNaTela(texto, remetente) {
         const chatBox = document.getElementById('chatBox');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `msg ${remetente}`;
-        msgDiv.innerText = texto;
-        chatBox.appendChild(msgDiv);
+        
+        // Estrutura de linhas fluidas igual à do app oficial
+        const rowDiv = document.createElement('div');
+        rowDiv.className = `message-row ${remetente}`;
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'sender-name';
+        nameDiv.innerText = remetente === 'user' ? 'Você' : 'Gemini';
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'msg-text';
+        textDiv.innerText = texto;
+        
+        // No Gemini oficial, o nome do usuário não aparece sobre o balão, apenas o texto encapsulado
+        if (remetente === 'bot') {
+            rowDiv.appendChild(nameDiv);
+        }
+        rowDiv.appendChild(textDiv);
+        
+        chatBox.appendChild(rowDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
-        return msgDiv;
+        return rowDiv;
     }
 
     function verificarEnter(event) {
