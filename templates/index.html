@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini</title>
-    <script src="https://google.com" async defer></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, sans-serif; }
         body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
@@ -14,9 +13,13 @@
         .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; }
 
+        /* Botão estilizado idêntico ao Google real */
+        .btn-google { display: flex; align-items: center; gap: 12px; background: #ffffff; color: #1f1f1f; padding: 12px 24px; border-radius: 24px; font-weight: 500; font-size: 0.95rem; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; }
+        .btn-google:hover { background: #f2f2f2; }
+        .btn-google img { width: 18px; height: 18px; }
+
         /* Container do Chat */
         .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #0b0b0d; display: flex; flex-direction: column; position: relative; padding: 0 20px; }
-
         .chat-header { padding: 20px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .chat-header h2 { font-size: 1.4rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
@@ -51,25 +54,21 @@
 </head>
 <body>
 
-    <!-- SE NÃO ESTIVER LOGADO, MOSTRA ESSA TELA -->
+    <!-- SE NÃO ESTIVER LOGADO -->
     {% if not session.get('usuario_logado') %}
     <div class="login-container">
         <h1>Gemini Advanced</h1>
         <p>Faça login com sua conta do Google para começar a usar.</p>
         
-        <!-- Configuração de redirecionamento automático para o Flask -->
-        <div id="g_id_onload"
-             data-client_id="847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="redirect"
-             data-login_uri="{{ request.url_root }}login_google"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_blue" data-text="signin_with" data-size="large"></div>
+        <!-- Botão HTML puro que faz uma navegação normal, escapando do bloqueio do Kaspersky -->
+        <a href="/login" class="btn-google">
+            <img src="https://wikimedia.org" alt="Google Logo">
+            Fazer login com o Google
+        </a>
     </div>
     {% else %}
 
-    <!-- SE JÁ ESTIVER LOGADO, MOSTRA O CHAT DIRETO -->
+    <!-- SE ESTIVER LOGADO -->
     <div class="chat-container">
         <div class="chat-header">
             <h2>Gemini Advanced</h2>
@@ -82,7 +81,7 @@
         <div class="chat-box" id="chatBox">
             <div class="message-row bot">
                 <div class="sender-name">Gemini</div>
-                <div class="msg-text">E aí, {{ session.get('usuario_nome').split(' ')[0] }}! Qual é a boa de hoje? Manda a braba.</div>
+                <div class="msg-text">E aí! Qual é a boa de hoje? Manda a braba.</div>
             </div>
         </div>
         
@@ -113,7 +112,7 @@
             const response = await fetch('/enviar_mensagem', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem: mensaje = mensagem })
+                body: JSON.stringify({ mensagem: mensagem })
             });
 
             const dados = await response.json();
