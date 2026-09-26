@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "chave-definitiva-e-segura-do-gemini-clone")
 
 # Chave da API da Groq via variável de ambiente (ou substitua com sua chave para testes)
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "SUA_GROQ_API_KEY_AQUI")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
 
 # Credenciais oficiais do Google e do Render
 CLIENT_ID = "847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com"
