@@ -3,29 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Groq (Render)</title>
+    <title>AI Chat Pro | GPT-OSS</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .chat-container { width: 450px; height: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
-        .chat-header { background: #2a2a2a; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 75%; word-wrap: break-word; }
-        .user { background: #4A90E2; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
-        .bot { background: #e9e9eb; color: #333; align-self: flex-start; border-bottom-left-radius: 0; }
-        .chat-input-area { display: flex; border-top: 1px solid #ddd; padding: 10px; background: #fff; }
-        .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
-        .chat-input-area button { background: #4A90E2; color: white; border: none; padding: 10px 15px; margin-left: 5px; border-radius: 4px; cursor: pointer; }
+        /* Estilos Globais e Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0d0e12; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e6ed; }
+
+        /* Container Principal do Chat */
+        .chat-container { width: 100%; max-width: 500px; height: 85vh; background: #161820; border-radius: 24px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #242736; margin: 10px; }
+
+        /* Cabeçalho Premium */
+        .chat-header { background: linear-gradient(135deg, #1f2235 0%, #161820 100%); padding: 20px; text-align: center; border-bottom: 1px solid #242736; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .chat-header .status-icon { width: 10px; height: 10px; background-color: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+        .chat-header h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; }
+
+        /* Caixa de Mensagens */
+        .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; background-color: #0f111a; }
+        
+        /* Customização da Barra de Rolagem */
+        .chat-box::-webkit-scrollbar { width: 6px; }
+        .chat-box::-webkit-scrollbar-track { background: transparent; }
+        .chat-box::-webkit-scrollbar-thumb { background: #242736; border-radius: 10px; }
+
+        /* Balões de Mensagem */
+        .msg { padding: 14px 18px; border-radius: 18px; max-width: 80%; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; transition: all 0.2s ease; animation: fadeIn 0.3s ease forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilo da Mensagem do Usuário */
+        .user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3); }
+
+        /* Estilo da Mensagem do Bot */
+        .bot { background-color: #1e2230; color: #e3e6ed; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #2b3044; }
+
+        /* Balão Especial de Carregamento ("Pensando") */
+        .thinking { font-style: italic; color: #8a92b2; background-color: rgba(30, 34, 48, 0.5); border: 1px dashed #3b4261; }
+
+        /* Área de Input Inferior */
+        .chat-input-area { display: flex; padding: 16px; background: #161820; border-top: 1px solid #242736; gap: 12px; align-items: center; }
+        .chat-input-area input { flex: 1; padding: 14px 20px; background: #1e2230; border: 1px solid #242736; border-radius: 14px; color: #ffffff; font-size: 0.95rem; outline: none; transition: border 0.2s ease, box-shadow: 0.2s ease; }
+        .chat-input-area input::placeholder { color: #626983; }
+        .chat-input-area input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); background: #232736; }
+
+        /* Botão Enviar Minimalista */
+        .chat-input-area button { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 14px 24px; font-weight: 600; font-size: 0.95rem; border-radius: 14px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+        .chat-input-area button:hover { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3); }
+        .chat-input-area button:active { transform: translateY(1px); }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="chat-header">🤖 Groq Chat Real</div>
+    <div class="chat-header">
+        <div class="status-icon"></div>
+        <h2>GPT-OSS 120B Pro</h2>
+    </div>
     <div class="chat-box" id="chatBox">
-        <div class="msg bot">Olá! Como posso te ajudar hoje?</div>
+        <div class="msg bot" style="opacity: 1; transform: none;">Olá! Sou o seu assistente de desenvolvimento avançado. Como posso impulsionar seu código hoje?</div>
     </div>
     <div class="chat-input-area">
-        <input type="text" id="userInput" placeholder="Digite sua mensagem..." onkeypress="verificarEnter(event)">
+        <input type="text" id="userInput" placeholder="Escreva sua mensagem aqui..." onkeypress="verificarEnter(event)">
         <button onclick="enviarMensagem()">Enviar</button>
     </div>
 </div>
@@ -38,10 +74,12 @@
 
         input.value = '';
         adicionarMensagemNaTela(mensagem, 'user');
-        const botMsgDiv = adicionarMensagemNaTela('Pensando...', 'bot');
+
+        // Cria o balão elegante de "Pensando"
+        const botMsgDiv = adicionarMensagemNaTela('Processando resposta...', 'bot');
+        botMsgDiv.classList.add('thinking');
 
         try {
-            // Agora ele chama o seu próprio servidor Python de forma segura e local
             const response = await fetch('/enviar_mensagem', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -50,13 +88,19 @@
 
             const dados = await response.json();
 
+            // Remove a classe de carregamento e exibe o resultado final
+            botMsgDiv.classList.remove('thinking');
+            
             if (response.ok) {
                 botMsgDiv.innerText = dados.resposta;
             } else {
-                botMsgDiv.innerText = "Erro: " + dados.erro;
+                botMsgDiv.style.color = "#ff4a4a";
+                botMsgDiv.innerText = "Erro interno: " + dados.erro;
             }
         } catch (erro) {
-            botMsgDiv.innerText = "Erro de conexão com o servidor.";
+            botMsgDiv.classList.remove('thinking');
+            botMsgDiv.style.color = "#ff4a4a";
+            botMsgDiv.innerText = "Falha de rede ao conectar com o servidor.";
         }
     }
 
