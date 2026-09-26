@@ -4,26 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini</title>
-    <!-- Script oficial do Google -->
-    <script src="https://google.com" defer></script>
+    <!-- Script oficial do Google carregado de forma limpa -->
+    <script src="https://google.com" async defer></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Google Sans", "Segoe UI", Roboto, sans-serif; }
         body { background-color: #0b0b0d; display: flex; justify-content: center; align-items: center; height: 100vh; color: #e3e3e3; overflow: hidden; }
 
         /* Tela de Login Centralizada */
-        .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center; animation: fadeIn 0.5s ease; }
+        .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center; }
         .login-container h1 { font-size: 2.2rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-container p { color: #80868b; font-size: 1rem; max-width: 320px; line-height: 1.5; }
 
-        /* Container do Botão do Google */
-        #botaoGoogleContainer { min-height: 40px; display: flex; align-items: center; justify-content: center; }
-
-        /* Container do Chat (Inicia Escondido) */
+        /* Container do Chat (Inicia Oculto) */
         .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #0b0b0d; display: flex; flex-direction: column; position: relative; padding: 0 20px; display: none; }
 
         .chat-header { padding: 20px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .chat-header h2 { font-size: 1.4rem; font-weight: 500; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
+        /* Perfil do Usuário Logado */
         .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #c4c7c5; }
         .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
 
@@ -31,9 +29,7 @@
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-thumb { background: #282a2d; border-radius: 10px; }
 
-        .message-row { display: flex; flex-direction: column; width: 100%; animation: fadeIn 0.4s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
+        .message-row { display: flex; flex-direction: column; width: 100%; }
         .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #c4c7c5; }
         .bot .sender-name { background: linear-gradient(90deg, #669df6, #b08ee0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -57,13 +53,26 @@
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- TELA DE LOGIN COM GOOGLE -->
 <div class="login-container" id="loginScreen">
     <h1>Gemini Advanced</h1>
-    <p id="textoStatus">Faça login com sua conta do Google para começar a buildar seus projetos.</p>
+    <p>Faça login com sua conta do Google para começar a usar.</p>
     
-    <!-- Elemento limpo onde o botão SERÁ injetado pelo JavaScript -->
-    <div id="botaoGoogleContainer"></div>
+    <!-- Configuração limpa declarativa para renderizar o botão sem falhas -->
+    <div id="g_id_onload"
+         data-client_id="847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="manipularLoginGoogle"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin" 
+         data-type="standard" 
+         data-shape="pill" 
+         data-theme="filled_blue" 
+         data-text="signin_with" 
+         data-size="large">
+    </div>
 </div>
 
 <!-- CONTAINER DO CHAT -->
@@ -76,7 +85,7 @@
     <div class="chat-box" id="chatBox">
         <div class="message-row bot">
             <div class="sender-name">Gemini</div>
-            <div class="msg-text">E aí, beleza? Conta pra mim, qual é o trampo ou o bug que a gnt vai resolver hoje?</div>
+            <div class="msg-text">E aí, beleza? Qual é a boa de hoje? Manda a braba.</div>
         </div>
     </div>
     
@@ -91,34 +100,24 @@
 </div>
 
 <script>
-    // Inicialização forçada do Google Identity Services por JavaScript
-    window.onload = function () {
-        try {
-            google.accounts.id.initialize({
-                client_id: "://googleusercontent.com",
-                callback: manipularLoginGoogle
-            });
-
-            google.accounts.id.renderButton(
-                document.getElementById("botaoGoogleContainer"),
-                { theme: "filled_blue", size: "large", type: "standard", shape: "pill", text: "signin_with" }
-            );
-        } catch (erro) {
-            document.getElementById("textoStatus").innerText = "Erro ao carregar o botão de login. Se você usa AdBlock ou Brave, desative-os para este site.";
-            document.getElementById("textoStatus").style.color = "#ff4a4a";
-            console.error(erro);
-        }
-    };
+    let nomeUsuario = "Você";
 
     function manipularLoginGoogle(response) {
+        // Pega os dados básicos codificados enviados pelo Google
         const id_token = response.credential;
-        const payload = JSON.parse(atob(id_token.split('.')));
+        const base64Url = id_token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64));
         
+        nomeUsuario = payload.name;
+
+        // Atualiza a barra superior com o nome e foto do usuário logado
         document.getElementById('userProfile').innerHTML = `
             <span>${payload.name}</span>
             <img src="${payload.picture}" alt="Foto de perfil">
         `;
 
+        // Troca de tela
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('chatScreen').style.display = 'flex';
     }
@@ -162,7 +161,7 @@
         
         const nameDiv = document.createElement('div');
         nameDiv.className = 'sender-name';
-        nameDiv.innerText = remetente === 'user' ? 'Você' : 'Gemini';
+        nameDiv.innerText = remetente === 'user' ? nomeUsuario : 'Gemini';
         
         const textDiv = document.createElement('div');
         textDiv.className = 'msg-text';
