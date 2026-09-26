@@ -2,25 +2,37 @@ import os
 import base64
 import json
 import urllib.parse
+import requests
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = "chave-definitiva-e-segura-do-gemini-clone"
 
-# Configuração da API da Groq
-GROQ_API_KEY = "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"
+# Chave secreta da sessão do Flask
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "chave-definitiva-e-segura-do-gemini-clone")
 
-CLIENT_ID = "://googleusercontent.com"
-REDIRECT_URI = "https://onrender.com"
+# Chave da API da Groq via variável de ambiente (ou substitua com sua chave para testes)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "SUA_GROQ_API_KEY_AQUI")
 
-PROMPT_PERSONALIDADE = "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples e mostre empatia quando algo der errado."
+# Credenciais oficiais do Google e do Render
+CLIENT_ID = "847378218961-kvtn9kk0ibmpvpsrho7rvr9ktocjuh2r.apps.googleusercontent.com"
+REDIRECT_URI = "https://teste-yv8h.onrender.com/auth"
+
+PROMPT_PERSONALIDADE = (
+    "Você não é uma IA, você é um programador sênior extremamente talentoso, gente boa e "
+    "parceiro de equipe do usuário. Escreva exatamente como um humano conversando no chat privado: "
+    "seja informal, use gírias de dev ('mano', 'cara', 'véi', 'trampo', 'vai dar bom'), "
+    "use abreviações naturais de chat ('vc', 'tbm', 'pra', 'gnt') e quebre a formalidade. "
+    "Jamais use respostas em formato de listas numéricas engessadas, tópicos longos ou "
+    "saudações repetitivas de robô. Vá direto ao ponto, comente o código de forma simples "
+    "e mostre empatia quando algo der errado."
+)
 
 @app.route('/')
 def index():
     if 'historico' not in session:
         session['historico'] = [{"role": "system", "content": PROMPT_PERSONALIDADE}]
         
-    # Geramos a URL correta e criptografada direto no backend antes de carregar a página
+    # Monta a URL de autenticação do Google OAuth 2.0
     parametros = {
         "client_id": CLIENT_ID,
         "redirect_uri": REDIRECT_URI,
@@ -29,11 +41,10 @@ def index():
         "nonce": "123456",
         "response_mode": "form_post"
     }
-    url_google_pronta = "https://google.com?" + urllib.parse.urlencode(parametros)
+    url_google_pronta = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(parametros)
     
     return render_template('index.html', url_google=url_google_pronta)
 
-# ROTA DE RETORNO DO GOOGLE: Recebe a resposta POST segura do Google e extrai nome e foto
 @app.route('/auth', methods=['POST'])
 def auth():
     token_google = request.form.get('id_token')
@@ -66,24 +77,33 @@ def enviar_mensagem():
     historico.append({"role": "user", "content": pergunta_usuario})
     
     try:
-        # Chamada HTTP direta para evitar problemas com dependências internas de sockets no Render
-        import requests
         headers = {
             "Authorization": f"Bearer {GROQ_API_KEY}",
             "Content-Type": "application/json"
         }
+        
         payload = {
-            "model": "openai/gpt-oss-120b",
+            "model": "llama-3.3-70b-versatile",
             "messages": historico,
             "temperature": 0.85,
-            "max_completion_tokens": 2048,
+            "max_tokens": 2048,
             "top_p": 1,
             "stream": False
         }
         
-        response = requests.post("https://groq.com", headers=headers, json=payload)
+        # Chamada REST para a API da Groq
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions", 
+            headers=headers, 
+            json=payload
+        )
+        
         dados_resposta = response.json()
         
+        if response.status_code != 200:
+            msg_erro = dados_resposta.get("error", {}).get("message", "Erro na resposta da Groq")
+            return jsonify({"erro": msg_erro}), response.status_code
+            
         resposta_ia = dados_resposta['choices'][0]['message']['content']
         historico.append({"role": "assistant", "content": resposta_ia})
         
