@@ -1,3 +1,4 @@
+import asyncio
 # Importa a biblioteca principal do Pygame para criação de jogos
 import pygame
 # Importa o módulo random para gerar números aleatórios (usado em posições, spawns e chances)
@@ -11,27 +12,21 @@ import json
 # Importa o módulo os para verificar a existência de arquivos no computador
 import os
 
-# Inicializa todos os módulos básicos necessários da biblioteca Pygame
 pygame.init()
-# Inicializa o mixer do Pygame para permitir a reprodução de sons e músicas
-pygame.mixer.init()
-# Inicializa o sistema de fontes do Pygame para desenhar textos na tela
+
+try:
+    pygame.mixer.init()
+except pygame.error:
+    pass
+
 pygame.font.init()
 
-# Obtém as informações detalhadas da tela atual do monitor do usuário
-infoObject = pygame.display.Info()
-# Define a largura da tela com base na resolução atual do monitor
-SCREEN_WIDTH = infoObject.current_w
-# Define a altura da tela com base na resolução atual do monitor
-SCREEN_HEIGHT = infoObject.current_h
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+IS_FULLSCREEN = False
 
-# Define uma flag booleana indicando que o jogo começa em modo tela cheia
-IS_FULLSCREEN = True
-# Cria a janela principal do Pygame utilizando tela cheia e suporte a buffer duplo para melhor desempenho gráfico
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF)
-# Define o título que aparece na barra superior da janela do jogo
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Pokémon Safari 3D - TCC Edition v4.0 Ultimate")
-# Cria um relógio interno para controlar a taxa de quadros por segundo (FPS) do jogo
 clock = pygame.time.Clock()
 
 # Define a cor preta padrão utilizada em fundos e elementos de interface
@@ -635,32 +630,33 @@ class SafariGameEngine:
         self.environment = self._generate_environment(isl["env_type"])
 
     # Alterna o modo de exibição entre tela cheia e janela redimensionável de 1280x720
+    
+    # Alterna o modo de exibição entre tela cheia e janela
     def toggle_fullscreen(self):
         global screen, IS_FULLSCREEN, SCREEN_WIDTH, SCREEN_HEIGHT
-        # Inverte o valor booleano atual da flag de tela cheia
-        IS_FULLSCREEN = not IS_FULLSCREEN
-        # Verifica se o modo ativado deve ser tela cheia
-        if IS_FULLSCREEN:
-            # Restaura a largura e altura para os valores máximos do monitor atual
-            SCREEN_WIDTH, SCREEN_HEIGHT = infoObject.current_w, infoObject.current_h
-            # Recria a janela do Pygame em modo tela cheia com buffer duplo
-            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.DOUBLEBUF)
-        else:
-            # Define uma resolução padrão em modo janela (1280x720)
-            SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
-            # Recria a janela do Pygame em modo janela com buffer duplo
-            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.DOUBLEBUF)
 
-        # Atualiza as variáveis de largura e altura da instância do motor do jogo
+        IS_FULLSCREEN = not IS_FULLSCREEN
+
+        if IS_FULLSCREEN:
+            screen = pygame.display.set_mode(
+                (SCREEN_WIDTH, SCREEN_HEIGHT),
+                pygame.FULLSCREEN
+            )
+        else:
+            SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
         self.w, self.h = SCREEN_WIDTH, SCREEN_HEIGHT
-        # Atualiza as dimensões na câmera virtual 3D
         self.camera.resize(self.w, self.h)
-        # Recria o sistema de gotas de chuva ajustando para a nova resolução de tela
         self.rain_drops = [RainSystem(self.w, self.h) for _ in range(140)]
-        # Recalcula a posição inicial de arremesso da Pokébola com base na nova altura da tela
-        self.ball_start_pos = pygame.math.Vector2(self.w // 2, self.h - 100)
-        # Recalcula a posição alvo do Pokémon na tela de batalha
-        self.poke_target_pos = pygame.math.Vector2(self.w // 2, self.h // 2 + 20)
+
+        self.ball_start_pos = pygame.math.Vector2(
+            self.w // 2, self.h - 100
+        )
+        self.poke_target_pos = pygame.math.Vector2(
+            self.w // 2, self.h // 2 + 20
+        )
+
 
     # Gera de forma procedural os elementos de cenário (árvores, rochas, etc.) espalhados pelo mapa
     def _generate_environment(self, env_type):
@@ -1739,7 +1735,7 @@ class SafariGameEngine:
         screen.blit(txt_controls, (20, self.h - 25))
 
     # Método principal que executa o loop infinito de execução do jogo a 60 FPS
-    def run(self):
+    async def run(self):
         # Define a flag de controle do loop principal como verdadeira
         running = True
         # Loop principal do jogo executado continuamente quadro a quadro
@@ -1831,15 +1827,11 @@ class SafariGameEngine:
             self.draw()
             # Atualiza o buffer de exibição da tela exibindo os gráficos processados no monitor
             pygame.display.flip()
+            await asyncio.sleep(0)
 
         # Encerra o Pygame de forma limpa ao sair do loop principal
-        pygame.quit()
-        # Encerra o processo do sistema operacional de forma segura
-        sys.exit()
+    
 
-# Bloco condicional padrão em Python que verifica se o script está sendo executado diretamente
 if __name__ == "__main__":
-    # Instancia a classe principal do motor do jogo SafariGameEngine
     game = SafariGameEngine()
-    # Executa o método run para iniciar o loop principal do jogo
-    game.run()
+    asyncio.run(game.run())
